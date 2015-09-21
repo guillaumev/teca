@@ -1,0 +1,33 @@
+name = TECA 3
+description = TECA 3 theme based on Bootstrap.
+core = 7.x
+base theme = bootstrap
+
+; Regions
+regions[navigation]     = 'Navigation'
+regions[header]         = 'Top Bar'
+regions[highlighted]    = 'Highlighted'
+regions[help]           = 'Help'
+regions[content]        = 'Content'
+regions[sidebar_first]  = 'Primary'
+regions[sidebar_second] = 'Secondary'
+regions[footer]         = 'Footer'
+
+; Stylesheets
+stylesheets[all][] = css/bootstrap.min.css
+stylesheets[all][] = css/style.css
+
+; Javascripts
+scripts[] = js/bootstrap.min.js
+scripts[] = js/teca3.js
+
+
+;*************************
+; METHOD 2: Bootstrap CDN
+;*************************
+; 
+; Settings inherited by base theme, uncomment to override.
+settings[toggle_name] = 0
+settings[toggle_search] = 1
+settings[cdn_bootstrap] = 1
+settings[bootstrap_cdn] = 3.0.0

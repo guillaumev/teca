@@ -1,0 +1,14 @@
+name = PDF Preview
+description = Show a snapshot of the first page of pdf files attached to nodes.
+package = Media
+core = 7.x
+dependencies[] = imagemagick
+dependencies[] = image
+
+
+; Information added by Drupal.org packaging script on 2014-09-03
+version = "7.x-2.1+16-dev"
+core = "7.x"
+project = "pdfpreview"
+datestamp = "1409765932"
+

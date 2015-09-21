@@ -1,0 +1,12 @@
+name = File Field Target
+description = Adds a display formatter for field field that allows you to set the target attribute.
+core = 7.x
+package = Fields
+dependencies[] = file
+
+; Information added by drupal.org packaging script on 2012-06-23
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "filefield_target"
+datestamp = "1340410714"
+

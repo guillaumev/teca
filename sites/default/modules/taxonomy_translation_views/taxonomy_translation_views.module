@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function taxonomy_translation_views_views_data_alter(&$data) {
+  $data['taxonomy_term_data']['language'] = array(
+    'title' => t('Term language'),
+    'help' => t('Taxonomy term language'),
+    'field' => array(
+      'handler' => 'views_handler_field_taxonomy_language',
+      'click sortable' => TRUE
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_taxonomy_language',
+      'help' => t('Taxonomy term language')
+    )
+  );
+  return $data;
+}
+
+

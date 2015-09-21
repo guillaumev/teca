@@ -1,0 +1,32 @@
+<?php
+
+/**
+* Implements hook_enable().
+*/
+function tecamod_enable() {
+  mailsystem_set(array('tecamod' => 'HTMLMailSystem'));
+}
+
+/**
+* Implements hook_disable().
+*/
+function tecamod_disable() {
+  mailsystem_clear(array('tecamod' => ''));
+}
+
+/**
+ * Change field_further_reading field from textfield to textarea
+ */
+function tecamod_update_7001() {
+  // Manual database changes.
+  db_query("UPDATE {field_config} SET type = 'text_long' WHERE field_name = 'field_further_reading'");
+  $textarea_spec = array(
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => FALSE,
+  );
+  db_change_field('field_data_field_further_reading', 'field_further_reading_value', 'field_further_reading_value', $textarea_spec);
+  db_change_field('field_revision_field_further_reading', 'field_further_reading_value', 'field_further_reading_value', $textarea_spec);
+  // Clear caches.
+  field_cache_clear(TRUE);
+}

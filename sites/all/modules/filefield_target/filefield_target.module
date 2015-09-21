@@ -1,0 +1,142 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function filefield_target_theme($existing, $type, $theme, $path) {
+  return array(
+    'filefield_target_link' => array(
+      'variables' => array('file' => NULL, 'icon_directory' => NULL, 'target' => NULL),
+    ),
+  );
+}
+
+/**
+ * Returns HTML for a link to a file.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - file: A file object to which the link will be created.
+ *   - icon_directory: (optional) A path to a directory of icons to be used for
+ *     files. Defaults to the value of the "file_icon_directory" variable.
+ *
+ * @ingroup themeable
+ */
+function theme_filefield_target_link($variables) {
+  $file = $variables['file'];
+  $target = $variables['target'];
+  $icon_directory = $variables['icon_directory'];
+
+  $url = file_create_url($file->uri);
+  $icon = theme('file_icon', array('file' => $file, 'icon_directory' => $icon_directory));
+
+  // Set options as per anchor format described at
+  // http://microformats.org/wiki/file-format-examples
+  $options = array(
+    'attributes' => array(
+      'type' => $file->filemime . '; length=' . $file->filesize,
+    ),
+  );
+
+  // Use the description as the link text if available.
+  if (empty($file->description)) {
+    $link_text = $file->filename;
+  }
+  else {
+    $link_text = $file->description;
+    $options['attributes']['title'] = check_plain($file->filename);
+  }
+
+  if ($target <> 'default') {
+    $options['attributes']['target'] = $target;
+  }
+
+  return '<span class="file">' . $icon . ' ' . l($link_text, $url, $options) . '</span>';
+}
+
+/**
+ * Provides the target options
+ */
+function filefield_target_options($option = NULL) {
+  $options = array(
+    'default' => t('Default (no target attribute)'),
+    '_top' => t('Open link in window root'),
+    '_blank' => t('Open link in new window'),
+  );
+
+  if (!empty($option)) {
+    return $options[$option];
+  }
+  else {
+    return $options;
+  }
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function filefield_target_field_formatter_info() {
+  return array(
+    'filefield_target' => array(
+      'label' => t('Generic file with target'),
+      'field types' => array('file'),
+      'settings' => array(
+        'filefield_target' => 'default',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function filefield_target_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  if ($display['type'] == 'filefield_target' ) {
+    foreach ($items as $delta => $item) {
+      $element[$delta] = array(
+        '#theme' => 'filefield_target_link',
+        '#file' => (object) $item,
+        '#target' => $display['settings']['filefield_target'],
+      );
+    }
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function filefield_target_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $element = array();
+  if ($display['type'] == 'filefield_target') {
+
+      $element['filefield_target'] = array(
+        '#type' => 'select',
+        '#title' => t('Target'),
+        '#default_value' => $settings['filefield_target'],
+        '#options' => filefield_target_options(),
+      );
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function filefield_target_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = '';
+  if ($display['type'] == 'filefield_target') {
+    $summary = '<div> ' . t('Target') . ': ' . filefield_target_options($settings['filefield_target']) . '</div>';
+  }
+
+  return $summary;
+}

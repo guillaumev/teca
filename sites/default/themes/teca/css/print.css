@@ -1,0 +1,16 @@
+.field-label {
+  text-transform: uppercase;
+  padding-top: 10px;
+}
+
+.submitted {
+  display: none;
+}
+
+.node-partner .field-label {
+  text-transform: none;
+}
+
+.node-partner .node-title {
+  font-size: 16px;
+}

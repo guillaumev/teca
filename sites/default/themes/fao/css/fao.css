@@ -1,0 +1,192 @@
+/** Background image **/
+body {
+  background-image: url('../images/mainBackground.png');
+}
+
+#page-wrapper {
+  background-color: white;
+}
+
+/** Layout **/
+#page-wrapper, .region-bottom {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/** Make content go up **/
+.with-navigation #content {
+  margin-top: -140px;
+  background-color: white;
+  margin-left: 175px;
+  min-height: 300px;
+}
+
+#name-and-slogan {
+  min-width: 800px;
+  background: #899CC0 url('../images/pagetitleBar.png');
+  background-repeat: repeat-y;
+}
+
+/** Language bar **/
+ul.language-switcher-locale-url {
+  list-style-type: none;
+  margin: 0;
+  font-size: 11px;
+}
+
+ul.language-switcher-locale-url li {
+  display: inline;
+}
+
+ul.language-switcher-locale-url li a {
+  color: #404040;
+  text-decoration: none;
+  font-weight: normal;
+  font-family: Arial;
+  font-size: 11px;
+  padding: 2px 20px 7px 20px;
+}
+
+ul.language-switcher-locale-url li a:hover,
+ul.language-switcher-locale-url li a.active {
+  background-image: url('../images/bg_langs_sel.png');
+  color: white;
+}
+
+
+#block-locale-language {
+  margin-bottom: 0;
+  background-image: url('../images/languagebar.png');
+  height: 20px;
+  padding-left: 161px;
+}
+
+/** FAO logo **/
+#fao-logo /* Wrapping link for logo */ {
+  float: left; /* LTR */
+  margin: 0;
+  padding: 0;
+  border-bottom: solid 4px #00418A;
+}
+
+#fao-logo img {
+  vertical-align: bottom;
+}
+
+/** FAUX column layout (see http://www.alistapart.com/articles/fauxcolumns/) **/
+#main {
+  background-image: url('../images/main_bg.png');
+}
+
+/** Search bar **/
+#block-search-form {
+  background-color: #5079AC;
+  width: 160px;
+}
+
+#edit-search-block-form--2 {
+  width: 116px;
+  font-size: 11px;
+  font-family: Arial;
+  height: 13px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+#block-search-form input.form-submit {
+  width: 18px;
+  height: 18px;
+  color: transparent;
+  border-width: 0;
+  border-style: none;
+  vertical-align: middle;
+}
+
+
+/** Navigation **/
+#navigation {
+  display: none;
+  height: 0;
+}
+
+/** Left sidebar **/
+.with-navigation .region-sidebar-first, .with-navigation .region-sidebar-second {
+  margin-top: 0;
+}
+
+.region-sidebar-first {
+  background-color: #C5D1E2;
+  width: 160px;
+  min-height: 170px;
+  padding-bottom: 50px;
+}
+
+/** Footer **/
+.region-footer {
+  background-color: #7492B8;
+  height: 149px;
+  padding-top: 1px;
+}
+
+/** Menu **/
+#block-system-main-menu ul.menu li {
+  list-style-type: none;
+  list-style-image: none;
+}
+
+#block-system-main-menu ul.menu li span {
+  font-size: 0.75em;
+  font-weight: bold;
+  background-color: #E9EEF4;
+  min-height: 24px;
+  margin-top: 5px;
+  width: 150px;
+  padding-left: 5px;
+  display: block;
+}
+
+#block-system-main-menu ul.menu li span.active {
+  background-color: white;
+}
+
+#block-system-main-menu ul.menu li span:hover {
+  background-color: white;
+}
+
+#block-system-main-menu ul.menu li span a {
+  color: #00418A;
+  text-decoration: none;
+}
+
+#block-system-main-menu ul.menu {
+  padding: 0;
+  padding-left:5px;
+}
+
+#block-system-main-menu ul.menu li ul.menu li span {
+  width: 145px;
+}
+
+/** Text **/
+#content {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+/** Copyright **/
+.copyright {
+  float: right;
+  margin-right: 10px;
+}
+
+.copyright a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.copyright a:hover {
+  text-decoration: underline;
+}

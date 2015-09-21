@@ -1,0 +1,113 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  tecamod.module: n/a
+#  tecamod.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: tecamod\n"
+"POT-Creation-Date: 2011-05-16 15:35+0200\n"
+"PO-Revision-Date: 2011-05-16 15:41+0100\n"
+"Last-Translator: Guillaume Viguier-Just <guillaume@viguierjust.com>\n"
+"Language-Team:  <guillaume@viguierjust.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Poedit-Language: French\n"
+
+#: tecamod.module:8
+msgid "Technology links"
+msgstr ""
+
+#: tecamod.module:12
+msgid "User"
+msgstr ""
+
+#: tecamod.module:17
+msgid "Search technologies"
+msgstr ""
+
+#: tecamod.module:38;38;39
+msgid "Read"
+msgstr ""
+
+#: tecamod.module:40;40;41
+msgid "Download"
+msgstr ""
+
+#: tecamod.module:42;42;43
+msgid "Print"
+msgstr ""
+
+#: tecamod.module:47
+msgid "You are logged in as"
+msgstr ""
+
+#: tecamod.module:47
+msgid "Logout"
+msgstr ""
+
+#: tecamod.module:55
+msgid "Login"
+msgstr ""
+
+#: tecamod.module:55
+msgid "Register"
+msgstr ""
+
+#: tecamod.module:78;111
+msgid "Home"
+msgstr ""
+
+#: tecamod.module:78
+msgid "Exchange groups"
+msgstr ""
+
+#: tecamod.module:111
+msgid "Technologies"
+msgstr ""
+
+#: tecamod.module:143
+msgid "This is the account's default language"
+msgstr ""
+
+#: tecamod.module:150
+msgid "Edit account"
+msgstr ""
+
+#: tecamod.module:159
+msgid "Enter keywords"
+msgstr "Entrez des mots-clés"
+
+#: tecamod.module:165
+msgid "Search"
+msgstr ""
+
+#: tecamod.module:168
+msgid "Advanced search"
+msgstr ""
+
+#: tecamod.module:180
+msgid "Please enter some keywords."
+msgstr ""
+
+#: tecamod.module:192
+msgid "Link"
+msgstr ""
+
+#: tecamod.info:0
+msgid "TECA"
+msgstr ""
+
+#: tecamod.info:0
+msgid "Functionalities specific to TECA"
+msgstr ""
+
+#: tecamod.info:0
+msgid "Other"
+msgstr ""
+

@@ -1,0 +1,598 @@
+<?php
+
+/**
+ * Implements hook_block_info()
+ */
+function tecamod_block_info() {
+  $blocks['technology-links'] = array(
+    'info' => t('Technology links'),
+    'cache' => DRUPAL_CACHE_PER_PAGE
+  );
+  $blocks['teca-user'] = array(
+    'info' => t('User'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+    'status' => 1,
+  );
+  $blocks['teca-technology-search'] = array(
+    'info' => t('Search technologies'),
+    'cache' => DRUPAL_CACHE_PER_PAGE
+  );
+  return $blocks;
+}
+
+/**
+ * Implement hook_block_view()
+ */
+function tecamod_block_view($delta = '') {
+  global $user;
+  if ($delta == 'technology-links') {
+    $nid = preg_replace('!^node/!', '', $_GET['q']);
+    if (is_numeric($nid)) {
+      $node = node_load($nid);
+    }
+    else {
+      $node = NULL;
+    }
+    $path_alias = drupal_get_path_alias('node/'.$nid);
+    $block['content'] = '';
+    $read = theme('image', array('path' => drupal_get_path('module', 'tecamod').'/icons/read.png', 'alt' => t('Read'), 'text' => t('Read'), 'attributes' => array('class' => array('print-icon'))));
+    if (isset($_GET['treaty'])) {
+      $block['content'] .= '<span class="print_read">'.l($read.t('Read'), 'read/'.$nid, array('html' => TRUE, 'query' => array('treaty' => 1))).'</span>';
+    }
+    else {
+      $block['content'] .= '<span class="print_read">'.l($read.t('Read'), 'read/'.$nid, array('html' => TRUE)).'</span>';
+    }
+    $pdf = theme('image', array('path' => drupal_get_path('module', 'tecamod').'/icons/download.png', 'alt' => t('Download description'), 'text' => t('Download description'), 'attributes' => array('class' => array('print-icon'))));
+    $block['content'] .= '<span class="print_pdf">'.l($pdf.t('Download description'), 'printpdf/'.$path_alias, array('html' => TRUE)).'</span>';
+    $print = theme('image', array('path' => drupal_get_path('module', 'tecamod').'/icons/print.png', 'alt' => t('Print'), 'text' => t('Print'), 'attributes' => array('class' => array('print-icon'))));
+    $block['content'] .= '<span class="print_html">'.l($print.t('Print'), 'print/'.$path_alias, array('html' => TRUE, 'attributes' => array('target' => '_blank'))).'</span>';
+  }
+  elseif ($delta == 'teca-user') {
+    if ($user->uid != 0) {
+      $block['content'] = '<span class="loggedin">'.t('You are logged in as').' '.l(format_username($user), 'user').'. </span><span class="logout">'.l(t('Logout'), 'user/logout').'</span>';
+    }
+    else {
+      $block['content'] = '';
+      $nid = preg_replace('!^node/!', '', $_GET['q']);
+      if (is_numeric($nid)) {
+        $node = node_load($nid);
+        if (og_is_group_type('node', $node->type)) {
+          $block['content'] = '<span class="login">'.l(t('Login'), 'user/login').' '.t('or').' '.l(t('Register'), 'user/register').'</span>';
+        }
+      }
+    }
+  }
+  elseif ($delta == 'teca-technology-search') {
+    $block['subject'] = t('Search technologies');
+    $block['title'] = $block['subject'];
+    $block['content'] = drupal_get_form('tecamod_technology_search_form');
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function tecamod_node_view($node, $build_mode) {
+  global $language;
+  if ($build_mode == 'full' && in_array($node->type, array('discussion', 'article', 'event', 'resource', 'useful_link'))) {
+    // Get group audience from node
+    $group_audience = $node->og_group_ref;
+    $gid = $group_audience[LANGUAGE_NONE][0]['target_id'];
+    $gnode = node_load($gid);
+    
+    $titles = array(t('Home'), t('Exchange groups'), $gnode->title);
+    switch ($language->language) {
+      case 'en':
+        $paths = array('<front>', 'groups', 'node/'.$gnode->nid);
+        break;
+      case 'es':
+        $paths = array('<front>', 'grupos', 'node/'.$gnode->nid);
+        break;
+      case 'fr':
+        $paths = array('<front>', 'groupes', 'node/'.$gnode->nid);
+        break;
+    }
+    
+    switch ($node->type) {
+      case 'discussion':
+        $titles[] = t('Discussions');
+        $paths[] = 'node/'.$gnode->nid.'/discussions';
+        break;
+      case 'news':
+        $titles[] = t('News');
+        $paths[] = 'node/'.$gnode->nid.'/news';
+        break;
+      case 'resource':
+        $titles[] = t('Resources');
+        $paths[] = 'node/'.$gnode->nid.'/resources';
+        break;
+      case 'event':
+        $titles[] = t('Events');
+        $paths[] = 'node/'.$gnode->nid.'/events';
+        break;
+    }
+    
+    $trail = array();
+    $i = 0;
+    foreach ($titles as $title) {
+      $trail[] = l($title, $paths[$i]);
+      $i++;
+    }
+
+    drupal_set_breadcrumb($trail);
+  }
+}
+
+/**
+ * Implements hook_page_alter()
+ */
+function tecamod_page_alter(&$page) {
+  global $language;
+  if (arg(0) == 'read') {
+    // We're reading a technology
+    $nid = arg(1);
+    $node = node_load($nid);
+    $titles = array(t('Home'), t('Technologies'), $node->title);
+    switch ($language->language) {
+      case 'en':
+        $paths = array('<front>', 'technologies', 'node/'.$node->nid);
+        break;
+      case 'es':
+        $paths = array('<front>', 'tecnologias', 'node/'.$node->nid);
+        break;
+      case 'fr':
+        $paths = array('<front>', 'technologies', 'node/'.$node->nid);
+        break;
+    }
+    
+    $trail = array();
+    $i = 0;
+    foreach ($titles as $title) {
+      $trail[] = l($title, $paths[$i]);
+      $i++;
+    }
+
+    drupal_set_breadcrumb($trail);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ */
+function tecamod_form_user_profile_form_alter(&$form, &$form_state) {
+  unset($form['comment_notify_settings']);
+  unset($form['group_audience']);
+  $form['locale']['#weight'] = 50;
+  $form['locale']['language']['#description'] = t('This is the account\'s default language');
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function tecamod_menu_alter(&$items) {
+  $items['user/%user/edit']['title'] = t('Edit account');
+  $items['user/password']['title'] = 'Forgot your password ?';
+  $items['user/password']['weight'] = 5;
+}
+
+function tecamod_technology_search_form($form, &$form_state) {
+  $form['keywords'] = array(
+    '#title' => t('Enter keywords'),
+    '#type' => 'textfield',
+    '#size' => 35
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search'),
+  );
+  $form['advanced_search'] = array(
+    '#markup' => l(t('Advanced search'), 'search/technology-advanced')
+  );
+
+  return $form;
+}
+
+function tecamod_technology_search_form_submit($form, &$form_state) {
+  if (isset($_GET['destination'])) {
+    unset($_GET['destination']);
+  }
+
+  if ($form_state['values']['keywords'] == '') {
+    form_set_error('keywords', t('Please enter some keywords.'));
+  }
+
+  $form_state['redirect'] = array('search/technology-simple', array('query' => array('search_api_views_fulltext' => trim($form_state['values']['keywords']))));
+}
+
+/**
+ * Implements hook_field_formatter_info()
+ */
+function tecamod_field_formatter_info() {
+  $formatters = array(
+    'country_link' => array(
+      'label' => t('Link'),
+      'field types' => array('country')
+    )
+  );
+  return $formatters;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function tecamod_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  foreach ($items as $delta => $item) {
+    $country = $item['country'];
+    switch ($display['type']) {
+      case 'country_link':
+        $element[$delta]['#markup'] = l($item['safe'], 'countries/'.$country->iso2);
+        break;
+    }
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_init
+ */
+function tecamod_init() {
+  drupal_add_js('var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src=\'" + gaJsHost + "google-analytics.com/ga.js\' type=\'text/javascript\'%3E%3C/script%3E"));', 'inline');
+  drupal_add_js('try {
+    var pageTracker = _gat._getTracker("UA-24921558-1"); //teca.fao.org
+    pageTracker._setAllowHash(false);
+    pageTracker._setDomainName("teca.fao.org");
+    pageTracker._setAllowLinker(true);
+    pageTracker._trackPageview();
+    var rollupTracker = _gat._getTracker("UA-16957552-1"); //rollup account all internet
+    rollupTracker._setAllowHash(false);
+    rollupTracker._setDomainName(".fao.org");
+    rollupTracker._setAllowLinker(true);
+    rollupTracker._trackPageview();
+    }
+    catch(err) {}
+    ', 'inline');
+
+}
+
+/** Rules **/
+
+/**
+* Implementation of hook_rules_action_info().
+*/
+function tecamod_rules_action_info() {
+  return array(
+    'tecamod_daily_notification' => array(
+      'label' => t('Send daily notification'),
+      'group' => t('TECA'),
+    ),
+    'tecamod_weekly_notification' => array(
+      'label' => t('Send weekly notification'),
+      'group' => t('TECA'),
+    ),
+  );
+}
+
+/**
+ * The 'rb_misc_action_views_result_count' condition.
+ */
+function tecamod_get_view($view, $args) {
+  // Prepare some data about the view.
+  $views_settings = explode('|', $view);
+  $view_name = $views_settings[0];
+  $display_name = $views_settings[1];
+  $view_arguments = $args;
+
+  // Load the view and set the properties.
+  $view = views_get_view($view_name);
+
+  $view->set_display($display_name);
+  $view->set_arguments($view_arguments);
+  $view->set_items_per_page(0);
+
+  // Get the results of the view and return TRUE or FALSE depending the number
+  // of hits.
+  $view->execute();
+  return $view;
+}
+
+function tecamod_daily_notification() {
+  tecamod_notifications();
+}
+
+function tecamod_weekly_notification() {
+  tecamod_notifications('weekly');
+}
+
+function tecamod_notifications($type = 'daily') {
+  global $language_url, $language;
+  drupal_set_time_limit(0);
+  
+  if (!lock_acquire('tecamod', 1800)) {
+    watchdog('tecamod', 'Attempting to re-run notifications while already running.', array(), WATCHDOG_WARNING);
+  }
+  else {
+    $languages = language_list();
+    // Force language URL to english
+    $language_url = language_default();
+    $language = language_default();
+
+    $total_results = 0;
+    // Get views
+    if ($type == 'daily') {
+      $view_technologies = tecamod_get_view('messages|technologies_daily', array());
+    }
+    else {
+      $view_technologies = tecamod_get_view('messages|technologies_weekly', array());
+    }
+    $nb_technologies = count($view_technologies->result);
+    $technologies = $view_technologies->render();
+    $total_results += $nb_technologies;
+    
+    $gids = og_get_all_group();
+    $views = array();
+    foreach ($gids as $gid) {
+      $tmp_node = node_load($gid);
+      $language_url = $languages[$tmp_node->language];
+      if ($type == 'daily') {
+        $view = tecamod_get_view('messages|daily', array($gid));
+      }
+      else {
+        $view = tecamod_get_view('messages|weekly', array($gid));
+      }
+      $views[$gid]['latest_contributions']['result'] = count($view->result);
+      $views[$gid]['latest_contributions']['render'] = $view->render();
+      $total_results += count($view->result);
+    }
+    
+    $language_url = language_default();
+    
+    if ($total_results > 0) {
+      $users = entity_load('user');
+      foreach ($users as $user) {
+        if (!empty($user->language)) {
+          $lkey = $user->language;
+          $language = $languages[$lkey];
+          $language_url = $languages[$lkey];
+        }
+        else {
+          $language_url = language_default();
+          $language = language_default();
+        }
+        if ($user->status) {// Check if user is active
+          $notification_type = field_get_items('user', $user, 'field_user_notifications');
+          $notification_type = $notification_type[0]['value'];
+          if ($notification_type == $type) {
+            if ($nb_technologies > 0) {
+              rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+            }
+            else {
+              foreach ($gids as $gid) {
+                if (og_is_member('node', $gid, 'user', $user) && $views[$gid]['latest_contributions']['result'] > 0) {
+                  rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Release lock
+    lock_release('tecamod');
+  }
+}
+
+/**
+ * Hide newsletter subscriptions
+ */
+function tecamod_user_view_alter(&$build) {
+  if (!user_access('administer users')) {
+    unset($build['simplenews']);
+  }
+}
+
+/**
+ * Implements hook_wysiwyg_plugin()
+ * Adds mediaembed plugin
+ */
+function tecamod_wysiwyg_plugin($editor, $version) {
+  switch ($editor) {
+    case 'ckeditor':
+      return array(
+        'MediaEmbed' => array(
+          'path' => libraries_get_path('ckeditor').'/plugins/mediaembed',
+          'filename' => 'plugin.js',
+          // Keep 'internal' => FALSE below if the plugin is not bundled with the editor (instead stored in this module's folder, sites/libraries folder or similar).
+          // No need for 'path' key for bundled plugins, just set 'internal' => TRUE.
+          // A list of buttons provided by this native plugin. The key has to
+          // match the corresponding JavaScript implementation. The value is
+          // is displayed on the editor configuration form only.
+          'buttons' => array(
+            'MediaEmbed' => t('Embed Media'),
+          ),
+          // No need for 'extensions' key if the plugin has buttons.
+          'load' => TRUE,
+          'internal' => FALSE,
+        ),
+      );
+     break;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ */
+function tecamod_form_og_ui_user_admin_account_alter(&$form, &$form_state) {
+  $group = $form['group']['#value'];
+  $query = db_select('users', 'u');
+  $query->innerJoin('og_membership', 'ogm', 'u.uid = ogm.etid');
+  $query
+    ->condition('ogm.gid', $group->gid, '=')
+    ->condition('ogm.entity_type', 'user', '=');
+
+  $count_query = clone $query;
+  $count_query->addExpression('COUNT(u.uid)');
+
+  $number = $query->countQuery()->execute()->fetchField();
+
+  $form['number_results'] = array(
+    '#markup' => '<strong>Number of members:</strong> '.$number,
+    '#weight' => -1
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter()
+ */
+function tecamod_form_user_pass_alter(&$form, &$form_state) {
+  drupal_set_title(t('Forgot your password ?'));
+  $form['message']['#markup'] = t('If you forgot your password please enter your email to reset it.');
+  $form['message']['#weight'] = '-9';
+}
+
+/**
+* Provide information about our custom placeholder/token.
+*
+* @see httx://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_token_info/7
+* @see httx://api.lullabot.com/token_example_token_info/7
+* @return array
+*   An associative array of available tokens and token types.
+*/
+function tecamod_token_info() {
+  $info['tokens']['comment']['summary'] = array(
+      'name' => t('Summary'),
+      'description' => t('Summary of the comment\'s main body text.'),
+  );
+  $info['tokens']['node']['trimmed'] = array(
+      'name' => t('Trimmed'),
+      'description' => t('Trimmed version of the node\'s main body text.'),
+  );
+  return $info;
+}
+
+/**
+* Provide replacement values for placeholder tokens.
+*
+* @see httx://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_tokens/7
+* @see httx://api.lullabot.com/token_example_tokens/7
+* @param string $type
+*   The machine-readable name of the type (group) of token being replaced, such
+*   as 'node', 'user', or another type defined by a hook_token_info()
+*   implementation.
+* @param array $tokens
+*   An array of tokens to be replaced. The keys are the machine-readable token
+*   names, and the values are the raw [type:token] strings that appeared in the
+*   original text.
+* @param array $data (optional)
+*   An associative array of data objects to be used when generating replacement
+*   values, as supplied in the $data parameter to token_replace().
+* @param array $options (optional)
+*   An associative array of options for token replacement; see token_replace()
+*   for possible values.
+* @return array
+*   An associative array of replacement values, keyed by the raw [type:token]
+*   strings from the original text.
+*/
+function tecamod_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  global $language;
+  
+  $language_code = $language->language;
+  $replacements = array();
+  $sanitize = !empty($options['sanitize']);
+
+  if ($type == 'comment' && !empty($data['comment'])) {
+    $comment = $data['comment'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'summary':
+          if ($items = field_get_items('comment', $comment, 'comment_body', $language_code)) {
+            $instance = field_info_instance('comment', 'body', 'comment_body');
+            $field_langcode = field_language('comment', $comment, 'comment_body', $language_code);
+            $replacement = $sanitize ? _text_sanitize($instance, $field_langcode, $items[0], 'value') : $items[0]['value'];
+            $replacements[$original] = text_summary($replacement);
+          }
+          break;
+      }
+    }
+  }
+  elseif ($type == 'node' && !empty($data['node'])) {
+    $node = $data['node'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'trimmed':
+           if ($items = field_get_items('node', $node, 'body', $language_code)) {
+            $instance = field_info_instance('node', 'body', $node->type);
+            $field_langcode = field_language('node', $node, 'body', $language_code);
+            $replacement = $sanitize ? _text_sanitize($instance, $field_langcode, $items[0], 'value') : $items[0]['value'];
+            $replacements[$original] = text_summary($replacement);
+          }
+          break;
+      }
+    }
+  }
+
+  return $replacements;
+}
+
+/**
+ * Implements hook_rdf_model_alter($res, $type, $id)
+ */
+function tecamod_rdf_model_alter(&$res, $type, $id) {
+  $props = $res->getProps();
+  if ($type == 'taxonomy_term') {
+    // Change URL of terms in the keywords vocabulary only
+    $inScheme = $props['skos:inScheme'];
+    if ($inScheme[0] == 'http://teca.fao.org/taxonomy_vocabulary/3') {
+      $tid = str_replace('http://teca.fao.org/taxonomy_term/', '', $res->uri);
+      $term = taxonomy_term_load($tid);
+      $old_uri = $res->uri;
+      $new_uri = 'http://aims.fao.org/aos/agrovoc/c_'.$term->agrovoc_id;
+      $index = $res->getIndex(NULL);
+      $index[$new_uri] = $index[$old_uri];
+      unset($index[$old_uri]);
+      $res->setIndex($index);
+      $res->setURI($new_uri);
+    }
+  }
+  elseif ($type == 'node') {
+    if (!empty($props['dc:subject'])) {
+      $old_urls = $props['dc:subject'];
+      $new_urls = array();
+      foreach ($old_urls as $old_url) {
+        $tid = str_replace('http://teca.fao.org/taxonomy_term/', '', $old_url);
+        $term = taxonomy_term_load($tid);
+        $new_urls[] = 'http://aims.fao.org/aos/agrovoc/c_'.$term->agrovoc_id;
+      }
+      $props['dc:subject'] = $new_urls;
+      $res->setProps($props);
+    }
+  }
+}
+
+/**
+ * Implements hook_mail_alter()
+ * Change contact form email text
+ */
+function tecamod_mail_alter(&$message) {
+  /*if ($message['id'] == 'contact_user_mail' || $message['id'] == 'contact_user_copy') {
+    $params = $message['params'];
+    $language = $message['language'];
+    $variables += array(
+      '!recipient-name' => format_username($params['recipient']),
+      '!recipient-edit-url' => url('user/' . $params['recipient']->uid . '/edit', array('absolute' => TRUE, 'language' => $language)),
+    );
+    $message['body'] = array();
+    $message['body'][] = t('Hello !recipient-name,', $variables, array('langcode' => $language->language));
+    $message['body'][] = t("!sender-name (!sender-url) has sent you a message via your contact form (!form-url) at !site-name.", $variables, array('langcode' => $language->language));
+    $message['body'][] = t("If you do not with to be contacted through TECA, click here to change your settings: !recipient-edit-url.", $variables, array('langcode' => $language->language));
+    $message['body'][] = t('Message:', array(), array('langcode' => $language->language));
+    $message['body'][] = $params['message'];
+  }*/
+}
+

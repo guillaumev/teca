@@ -1,0 +1,11 @@
+; $Id$
+name = Taxonomy Translation Views Integration
+description = Allows you to filter taxonomy terms by language in views
+core = 7.x
+package = "Multilingual"
+
+dependencies[] = views
+dependencies[] = i18n_taxonomy
+
+files[] = handlers/views_handler_field_taxonomy_language.inc
+files[] = handlers/views_handler_filter_taxonomy_language.inc
