@@ -1,0 +1,7 @@
+name = Agrovoc Taxonomy
+description = Allows you to fill in a taxonomy using calls to the Agrovoc Web Service
+core = 7.x
+package = "Agrovoc"
+dependencies[] = taxonomy
+dependencies[] = agrovoc_api
+dependencies[] = i18n_taxonomy
