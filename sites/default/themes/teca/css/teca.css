@@ -906,3 +906,7 @@ span.countryicon p {
   display: none;
 }
 
+div.date-display-range {
+  display: inline;
+}
+
