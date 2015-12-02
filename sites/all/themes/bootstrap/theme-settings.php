@@ -26,16 +26,26 @@ function bootstrap_form_system_theme_settings_alter(&$form, $form_state, $form_i
     return;
   }
 
-  // Display a warning if jquery_update isn't enabled.
-  if ((!module_exists('jquery_update') || !version_compare(variable_get('jquery_update_jquery_version', '1.10'), '1.9', '>=')) && !bootstrap_setting('toggle_jquery_error', $theme)) {
-    drupal_set_message(t('jQuery Update is not enabled, Bootstrap requires a minimum jQuery version of 1.9 or higher. Please enable the <a href="!jquery_update_project_url">jQuery Update</a> module @jquery_update_version or higher. If you are seeing this, then you must <a href="!jquery_update_configure">manually configuration</a> this setting or optionally <a href="!bootstrap_suppress_jquery_error">suppress this message</a> instead.', array(
-      '@jquery_update_version' => '7.x-2.5',
-      '!jquery_update_project_url' => 'https://www.drupal.org/project/jquery_update',
-      '!jquery_update_configure' => url('admin/config/development/jquery_update'),
-      '!bootstrap_suppress_jquery_error' => url('admin/appearance/settings/' . $theme, array(
-        'fragment' => 'edit-bootstrap-toggle-jquery-error',
-      )),
-    )), 'error', FALSE);
+  // Display a warning if jQuery Update isn't enabled or using a lower version.
+  if (!bootstrap_setting('toggle_jquery_error', $theme) || !module_exists('jquery_update')) {
+    // Get theme specific jQuery version.
+    $jquery_version = theme_get_setting('jquery_update_jquery_version', $theme);
+
+    // Get site wide jQuery version if theme specific one is not set.
+    if (!$jquery_version) {
+      $jquery_version = variable_get('jquery_update_jquery_version', '1.10');
+    }
+
+    // Ensure the jQuery version is >= 1.9.
+    if (!$jquery_version || !version_compare($jquery_version, '1.9', '>=')) {
+      drupal_set_message(t('jQuery Update is not enabled, Bootstrap requires a minimum jQuery version of 1.9 or higher. Please enable the <a href="!jquery_update_project_url">jQuery Update</a> module. If you are seeing this message, then you must <a href="!jquery_update_configure">manually configuration</a> this setting or optionally <a href="!bootstrap_suppress_jquery_error">suppress this message</a> instead.', array(
+        '!jquery_update_project_url' => 'https://www.drupal.org/project/jquery_update',
+        '!jquery_update_configure' => url('admin/config/development/jquery_update'),
+        '!bootstrap_suppress_jquery_error' => url('admin/appearance/settings/' . $theme, array(
+          'fragment' => 'edit-bootstrap-toggle-jquery-error',
+        )),
+      )), 'error', FALSE);
+    }
   }
 
   // Create vertical tabs for all Bootstrap related settings.
@@ -93,7 +103,7 @@ function bootstrap_form_system_theme_settings_alter(&$form, $form_state, $form_i
     '#default_value' => bootstrap_setting('button_colorize', $theme),
     '#description' => t('Adds classes to buttons based on their text value. See: <a href="!bootstrap_url" target="_blank">Buttons</a> and <a href="!api_url" target="_blank">hook_bootstrap_colorize_text_alter()</a>', array(
       '!bootstrap_url' => 'http://getbootstrap.com/css/#buttons',
-      '!api_url' => 'http://drupalcode.org/project/bootstrap.git/blob/refs/heads/7.x-3.x:/bootstrap.api.php#l13',
+      '!api_url' => 'http://drupal-bootstrap.org/apis/hook_bootstrap_colorize_text_alter',
     )),
   );
   $form['general']['buttons']['bootstrap_button_iconize'] = array(
@@ -101,7 +111,7 @@ function bootstrap_form_system_theme_settings_alter(&$form, $form_state, $form_i
     '#title' => t('Iconize Buttons'),
     '#default_value' => bootstrap_setting('button_iconize', $theme),
     '#description' => t('Adds icons to buttons based on the text value. See: <a href="!api_url" target="_blank">hook_bootstrap_iconize_text_alter()</a>', array(
-      '!api_url' => 'http://drupalcode.org/project/bootstrap.git/blob/refs/heads/7.x-3.x:/bootstrap.api.php#l37',
+      '!api_url' => 'http://drupal-bootstrap.org/apis/hook_bootstrap_iconize_text_alter',
     )),
   );
 
@@ -344,12 +354,17 @@ function bootstrap_form_system_theme_settings_alter(&$form, $form_state, $form_i
     '#title' => t('Anchors'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#description' => t('This plugin is not able to be configured from the UI as it is severely broken. In an effort to balance not break backwards compatibility and to prevent new users from running into unforeseen issues, you must manually opt-in/out inside your theme .info file. Please see the following issue for more details: <a href="!url" target="_blank">Replace custom JS with the bootstrap-anchor plugin</a>', array(
+      '!url' => 'https://www.drupal.org/node/2462645',
+    )),
   );
   $form['javascript']['anchors']['bootstrap_anchors_fix'] = array(
     '#type' => 'checkbox',
     '#title' => t('Fix anchor positions'),
     '#default_value' => bootstrap_setting('anchors_fix', $theme),
     '#description' => t('Ensures anchors are correctly positioned only when there is margin or padding detected on the BODY element. This is useful when fixed navbar or administration menus are used.'),
+    // Prevent UI edits, see description above.
+    '#disabled' => TRUE,
   );
   $form['javascript']['anchors']['bootstrap_anchors_smooth_scrolling'] = array(
     '#type' => 'checkbox',
@@ -361,6 +376,8 @@ function bootstrap_form_system_theme_settings_alter(&$form, $form_state, $form_i
         ':input[name="bootstrap_anchors_fix"]' => array('checked' => FALSE),
       ),
     ),
+    // Prevent UI edits, see description above.
+    '#disabled' => TRUE,
   );
 
   // Forms.
