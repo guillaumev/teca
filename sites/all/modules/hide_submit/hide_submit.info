@@ -9,9 +9,9 @@ configure = admin/config/content/hide-submit
 
 
 
-; Information added by drupal.org packaging script on 2013-03-25
-version = "7.x-2.0"
+; Information added by Drupal.org packaging script on 2015-12-04
+version = "7.x-2.1"
 core = "7.x"
 project = "hide_submit"
-datestamp = "1364251211"
+datestamp = "1449260940"
 
