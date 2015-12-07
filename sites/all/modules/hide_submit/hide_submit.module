@@ -4,8 +4,8 @@
  * @file
  * This module blocks users from accidentally submitting a form twice. The
  * protection only comes from jQuery and is not server side, so this is only
- * effective against accidentaly clicking of the button by users with Javascript
- * enabled (which is a very high percent of users).
+ * effective against accidentally clicking of the button by users with
+ * Javascript enabled (which is a very high percent of users).
  */
 
 /**
@@ -15,8 +15,9 @@
  *   TRUE if hide_submit is active.
  */
 function hide_submit_add_settings() {
-  static $hide_submit_settings;
-  if (!$hide_submit_settings) {
+  $hide_submit_settings = drupal_static(__FUNCTION__, array());
+
+  if (empty($hide_submit_settings)) {
     $hide_submit_settings = array('hide_submit' => array(
       'hide_submit_status' => variable_get('hide_submit_status', TRUE),
       'hide_submit_method' => variable_get('hide_submit_method', 'disable'),
@@ -29,19 +30,39 @@ function hide_submit_add_settings() {
       'hide_submit_reset_time' => (int)variable_get('hide_submit_reset_time', 5000),
     ));
 
-    // Allow other modules to modify this behavior.
-    $altered_hide_submit_settings = module_invoke_all('hide_submit_alter', $hide_submit_settings);
-    if (!empty($altered_hide_submit_settings)) {
-      // Overwrite the settings with altered values.
-      $hide_submit_settings = $altered_hide_submit_settings+$hide_submit_settings;
-    }
+    // Allow other modules to modify settings.
+    drupal_alter('hide_submit', $hide_submit_settings);
 
     // Add settings.
     if ($hide_submit_settings['hide_submit']['hide_submit_status']) {
       drupal_add_js($hide_submit_settings, 'setting');
     }
   }
+
   return $hide_submit_settings['hide_submit']['hide_submit_status'];
+}
+
+/**
+ * Adds the JS and CSS to the form.
+ */
+function hide_submit_attach_js_css(&$form) {
+  // Add JavaScript.
+  if (!isset($form['#attached']['js'])) {
+    $form['#attached']['js'] = array();
+  }
+  $form['#attached']['js'][drupal_get_path('module', 'hide_submit') . '/hide_submit.js'] = array(
+    'type' => 'file',
+    'weight' => 10,
+  );
+
+  // Add CSS.
+  if (!isset($form['#attached']['css'])) {
+    $form['#attached']['css'] = array();
+  }
+  $form['#attached']['css'][drupal_get_path('module', 'hide_submit') . '/hide_submit.css'] = array(
+    'type' => 'file',
+    'weight' => 10,
+  );
 }
 
 /**
@@ -49,24 +70,20 @@ function hide_submit_add_settings() {
  */
 function hide_submit_form_alter(&$form, &$form_state, $form_id) {
   if (hide_submit_add_settings()) {
-    // Add javascript.
-    if (!isset($form['#attached']['js'])) {
-      $form['#attached']['js'] = array();
-    }
-    $form['#attached']['js'][drupal_get_path('module', 'hide_submit') . '/hide_submit.js'] = array(
-      'type' => 'file',
-      'weight' => 10,
-    );
-
-    // Add css.
-    if (!isset($form['#attached']['css'])) {
-      $form['#attached']['css'] = array();
-    }
-    $form['#attached']['css'][drupal_get_path('module', 'hide_submit') . '/hide_submit.css'] = array(
-      'type' => 'file',
-      'weight' => 10,
-    );
+    hide_submit_attach_js_css($form);
+    $form['#after_build'][] = 'hide_submit_after_build';
   }
+}
+
+/**
+ * After build form callback.
+ */
+function hide_submit_after_build($form, &$form_state) {
+  if (hide_submit_add_settings()) {
+    hide_submit_attach_js_css($form);
+  }
+
+  return $form;
 }
 
 /**
