@@ -969,11 +969,11 @@ function og_update_7200() {
     'default' => '',
   );
 
-  //db_add_field('og_membership', 'group_type', $column);
+  db_add_field('og_membership', 'group_type', $column);
 
   // Re-add index.
   db_drop_index('og_membership', 'gid');
-  //db_add_index('og_membership', 'group', array('gid', 'group_type'));
+  db_add_index('og_membership', 'group', array('gid', 'group_type'));
 
   $column = array(
     'type' => 'varchar',
@@ -983,12 +983,12 @@ function og_update_7200() {
     'description' => "The group's entity type.",
   );
 
-  //db_add_field('og_role', 'group_type', $column);
+  db_add_field('og_role', 'group_type', $column);
 
 
   // Rename {og_users_roles} to allow easier migration.
   // Re-create a clean {og_users_roles}.
-  /*db_rename_table('og_users_roles', 'temp_og_users_roles');
+  db_rename_table('og_users_roles', 'temp_og_users_roles');
 
   $schema = og_schema_7200_info();
   db_create_table('og_users_roles', $schema['og_users_roles']);
@@ -1020,7 +1020,7 @@ function og_update_7200() {
 
   // Clear entity cache.
   // See http://drupal.org/node/996236
-  entity_info_cache_clear();*/
+  entity_info_cache_clear();
 
   // Temporary variable to indicate we need to migrate OGUR data.
   variable_set('og_7200_ogur_roles', TRUE);
