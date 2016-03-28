@@ -5,3 +5,10 @@ package = "Agrovoc"
 dependencies[] = taxonomy
 dependencies[] = agrovoc_api
 dependencies[] = i18n_taxonomy
+
+; Information added by Drupal.org packaging script on 2014-06-20
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "agrovoc"
+datestamp = "1403273628"
+

@@ -46,6 +46,7 @@ function agrovoc_taxonomy_install() {
     'type' => 'int',
     'unsigned' => TRUE,
     'not null' => FALSE,
+    'size' => 'big',
     'description' => 'The agrovoc id of the term'
   ));
   db_query("DELETE FROM {cache}");
@@ -103,8 +104,22 @@ function agrovoc_taxonomy_schema_alter(&$schema) {
     'type' => 'int',
     'unsigned' => TRUE,
     'not null' => FALSE,
+    'size' => 'big',
     'description' => 'The agrovoc id of the term'
   );
+}
+
+/**
+ * Change size of agrovoc_id in the database
+ */
+function agrovoc_taxonomy_update_7106(&$sandbox) {
+  db_change_field('taxonomy_term_data', 'agrovoc_id', 'agrovoc_id', array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => FALSE,
+    'size' => 'big',
+    'description' => 'The agrovoc id of the term'
+  ));
 }
 
 /**
