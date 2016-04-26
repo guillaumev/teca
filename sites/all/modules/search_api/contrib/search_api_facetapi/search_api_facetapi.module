@@ -437,24 +437,11 @@ function _search_api_facetapi_facet_create_label(array $values, array $options) 
   // For entities, we can simply use the entity labels.
   if (isset($field['entity_type'])) {
     $type = $field['entity_type'];
-    if ($type == 'country') {
-      $cids = array();
-      foreach ($values as $iso2) {
-        $tmp = country_load($iso2);
-        $cids[] = $tmp->cid;
-      }
-      $values = $cids;
-    }
     $entities = entity_load($type, $values);
     foreach ($entities as $id => $entity) {
       $label = entity_label($type, $entity);
       if ($label !== FALSE) {
-        if ($type == 'country') {
-          $map[$entity->iso2] = $label;
-        }
-        else {
-          $map[$id] = $label;
-        }
+        $map[$id] = $label;
       }
     }
     if (count($map) == $n) {
