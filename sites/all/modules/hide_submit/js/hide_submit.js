@@ -22,11 +22,38 @@
         var $form = $(this);
 
         // Bind to input elements.
-        $('input.form-submit, button.form-submit', $form).click(function (e) {
-          var el = $(this);
-          el.after('<input type="hidden" name="' + el.attr('name') + '" value="' + el.attr('value') + '" />');
-          return true;
-        });
+        if (Drupal.settings.hide_submit.hide_submit_method === 'indicator') {
+          // Replace input elements with buttons.
+          $('input.form-submit', $form).each(function(index, el) {
+            var attrs = {};
+
+            $.each($(this)[0].attributes, function(idx, attr) {
+                attrs[attr.nodeName] = attr.nodeValue;
+            });
+
+            $(this).replaceWith(function() {
+                return $("<button/>", attrs).append($(this).attr('value'));
+            });
+          });
+          // Add needed attributes to the submit buttons.
+          $('button.form-submit', $form).each(function(index, el) {
+            $(this).addClass('ladda-button button').attr({
+              'data-style': Drupal.settings.hide_submit.hide_submit_indicator_style,
+              'data-spinner-color': Drupal.settings.hide_submit.hide_submit_spinner_color,
+              'data-spinner-lines': Drupal.settings.hide_submit.hide_submit_spinner_lines
+            });
+          });
+          Ladda.bind('.ladda-button', $form, {
+            timeout: Drupal.settings.hide_submit.hide_submit_reset_time
+          });
+        }
+        else {
+          $('input.form-submit, button.form-submit', $form).click(function (e) {
+            var el = $(this);
+            el.after('<input type="hidden" name="' + el.attr('name') + '" value="' + el.attr('value') + '" />');
+            return true;
+          });
+        }
 
         // Bind to form submit.
         $('form', context).submit(function (e) {
@@ -48,7 +75,7 @@
                 $inp.after('<span class="hide-submit-text">' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_atext) + '</span>');
               }
             }
-            else {
+            else if (Drupal.settings.hide_submit.hide_submit_method !== 'indicator'){
               var pdiv = '<div class="hide-submit-text' + (Drupal.settings.hide_submit.hide_submit_hide_css ? ' ' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_css) + '"' : '') + '>' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_text) + '</div>';
               if (Drupal.settings.hide_submit.hide_submit_hide_fx) {
                 $('input.form-submit, button.form-submit', $form).addClass(Drupal.settings.hide_submit.hide_submit_css).fadeOut(100).eq(0).after(pdiv);
@@ -58,7 +85,7 @@
                 $('input.form-submit, button.form-submit', $form).addClass(Drupal.settings.hide_submit.hide_submit_css).hide().eq(0).after(pdiv);
               }
             }
-            // Add a timeout to rerset the buttons (if needed).
+            // Add a timeout to reset the buttons (if needed).
             if (Drupal.settings.hide_submit.hide_submit_reset_time) {
               timeoutId = window.setTimeout(function() {
                 hideSubmitResetButtons(null, $form);
@@ -79,18 +106,28 @@
         // Clear timer.
         window.clearTimeout(timeoutId);
         timeoutId = null;
-        if (Drupal.settings.hide_submit.hide_submit_method === 'disable') {
-          $('input.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css) + ', button.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css), form)
-            .removeClass(Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_css))
-            .removeAttr('disabled');
-          $('.hide-submit-text', form).remove();
-        }
-        else {
-          $('input.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css) + ', button.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css), form)
-            .stop()
-            .removeClass(Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_css))
-            .show();
-          $('.hide-submit-text', form).remove();
+        switch (Drupal.settings.hide_submit.hide_submit_method) {
+          case 'disable':
+            $('input.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css) + ', button.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css), form)
+              .each(function (i, el) {
+                $(el).removeClass(Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_css))
+                  .removeAttr('disabled');
+              });
+            $('.hide-submit-text', form).remove();
+            break;
+
+          case 'indicator':
+            Ladda.stopAll();
+            break;
+
+          default:
+            $('input.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css) + ', button.' + Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_css), form)
+              .each(function (i, el) {
+                $(el).stop()
+                  .removeClass(Drupal.checkPlain(Drupal.settings.hide_submit.hide_submit_hide_css))
+                  .show();
+              });
+            $('.hide-submit-text', form).remove();
         }
       }
     }
