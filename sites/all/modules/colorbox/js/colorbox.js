@@ -14,6 +14,10 @@ Drupal.behaviors.initColorbox = {
       }
     }
 
+    settings.colorbox.rel = function () {
+      return $(this).data('colorbox-gallery')
+    };
+
     $('.colorbox', context)
       .once('init-colorbox')
       .colorbox(settings.colorbox);
