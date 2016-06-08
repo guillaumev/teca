@@ -14,8 +14,14 @@ Drupal.behaviors.initColorbox = {
       }
     }
 
+    // Use "data-colorbox-gallery" if set otherwise use "rel".
     settings.colorbox.rel = function () {
-      return $(this).data('colorbox-gallery')
+      if ($(this).data('colorbox-gallery')) {
+        return $(this).data('colorbox-gallery');
+      }
+      else {
+        return $(this).attr('rel');
+      }
     };
 
     $('.colorbox', context)
