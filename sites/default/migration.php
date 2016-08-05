@@ -2,6 +2,7 @@
 
 error_reporting(E_ALL);
 
+echo "beginning";
 /**
  * Migrate TECA users
  */
@@ -766,3 +767,4 @@ function teca_migrate() {
 
 $sql = teca_migrate();
 file_put_contents(realpath(dirname(__FILE__)).'/newteca.sql', $sql);
+echo "end";
