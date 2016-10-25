@@ -10,8 +10,7 @@ function teca_migrate_users() {
   // Load users
   $query = new EntityFieldQuery();
 
-  $query->entityCondition('entity_type', 'user', '=')
-    ->propertyCondition('status', '1', '=');
+  $query->entityCondition('entity_type', 'user', '=');
 
   $result = $query->execute();
 
@@ -55,15 +54,13 @@ function teca_migrate_users() {
 
 /**
  * Migrate TECA partners
- * TODO: deal with media fields in description
  */
 function teca_migrate_partners() {
   // Load users
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'partner')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'partner');
 
   $result = $query->execute();
 
@@ -112,8 +109,7 @@ function teca_migrate_technologies($all_keywords_sql) {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'technology')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'technology');
 
   $result = $query->execute();
 
@@ -126,7 +122,7 @@ function teca_migrate_technologies($all_keywords_sql) {
       $wrapper = entity_metadata_wrapper('node', $node);
       $images = [];
       foreach ($wrapper->field_images->value() as $image) {
-        $images[] = $image['fid'];
+        $images[] = $image;
       }
       $sources = [];
       foreach ($wrapper->field_source->value() as $source) {
@@ -182,7 +178,6 @@ function teca_migrate_technologies($all_keywords_sql) {
             'incomplete' => !empty($node->field_technology_incomplete[$node->language][0]['value']) ? $node->field_technology_incomplete[$node->language][0]['value'] : 0,
             'treaty_portal' => !empty($node->field_treaty_portal[$node->language][0]['value']) ? $node->field_treaty_portal[$node->language][0]['value'] : 0,
             'iyff' => !empty($node->field_iyff[$node->language][0]['value']) ? $node->field_iyff[$node->language][0]['value'] : 0,
-            //'obsolete' => $wrapper->field_obsolete->value(),
           );
           foreach ($translations as $language => $translation) {
             $ntranslation = entity_load_single('node', $translation->nid);
@@ -204,9 +199,6 @@ function teca_migrate_technologies($all_keywords_sql) {
         else {
           echo "Could not find tnid".$node->nid."\n";
         }
-//       'keywords' => $keywords,
-//       'see_also' => $see_also,
-//      );
       }
       else {
         $new_techs['technologies'][] = array(
@@ -225,7 +217,6 @@ function teca_migrate_technologies($all_keywords_sql) {
           'incomplete' => !empty($node->field_technology_incomplete[$node->language][0]['value']) ? $node->field_technology_incomplete[$node->language][0]['value'] : 0,
           'treaty_portal' => !empty($node->field_treaty_portal[$node->language][0]['value']) ? $node->field_treaty_portal[$node->language][0]['value'] : 0,
           'iyff' => !empty($node->field_iyff[$node->language][0]['value']) ? $node->field_iyff[$node->language][0]['value'] : 0,
-          //'obsolete' => $wrapper->field_obsolete->value(),
         );
         $new_techs['technology'][] = array(
           'technologies_id' => $node->nid,
@@ -248,11 +239,20 @@ function teca_migrate_technologies($all_keywords_sql) {
         );
       }
       // Images
-      foreach ($images as $fid) {
-        $new_techs['technologies_has_image'][] = array(
-          'technologies_id' => $node->nid,
-          'file_id' => $fid
-        );
+      foreach ($images as $img) {
+        $dupe = false;
+        foreach ($new_techs['technologies_has_image'] as $image) {
+          if ($image['technologies_id'] == $node->nid && $image['file_id'] == $fid) {
+            $dupe = true;
+          }
+        }
+        if (!$dupe) {
+          $new_techs['technologies_has_image'][] = array(
+            'technologies_id' => $node->nid,
+            'file_id' => $img['fid'],
+            'caption' => $img['title']
+          );
+        }
       }
       // Keywords
       foreach ($keywords as $keyword) {
@@ -274,32 +274,39 @@ function teca_migrate_technologies($all_keywords_sql) {
       }
       // Partners
       foreach ($sources as $nid) {
-        $new_techs['technologies_has_partner'][] = array(
-          'technologies_id' => $node->nid,
-          'partner_id' => $nid
-        );
+        if (!empty($nid)) {
+          $new_techs['technologies_has_partner'][] = array(
+            'technologies_id' => $node->nid,
+            'partner_id' => $nid
+          );
+        }
       }
       // Regions
       foreach ($regions as $tid) {
-        $new_techs['technologies_has_region'][] = array(
-          'technologies_id' => $node->nid,
-          'region_id' => $tid
-        );
+        if (!empty($tid)) {
+          $new_techs['technologies_has_region'][] = array(
+            'technologies_id' => $node->nid,
+            'region_id' => $tid
+          );
+        }
       }
-      // TODO: see also
       // Countries
       foreach ($countries as $iso2) {
-        $new_techs['technologies_has_country'][] = array(
-          'technologies_id' => $node->nid,
-          'country_id' => $iso2
-        );
+        if (!empty($iso2)) {
+          $new_techs['technologies_has_country'][] = array(
+            'technologies_id' => $node->nid,
+            'country_id' => $iso2
+          );
+        }
       }
       // Files
       foreach ($afiles as $fid) {
-        $new_techs['technologies_has_files'][] = array(
-          'technologies_id' => $node->nid,
-          'file_id' => $fid
-        );
+        if (!empty($fid)) {
+          $new_techs['technologies_has_files'][] = array(
+            'technologies_id' => $node->nid,
+            'file_id' => $fid
+          );
+        }
       }
     }
   }
@@ -386,7 +393,6 @@ function teca_migrate_keywords() {
       $translations = array();
       if (!empty($translation_set)) {
         $translations = $translation_set->get_translations();
-        //print_r($translations);
         $new_cats[] = array(
           'id' => $term->tid,
           'name_en' => isset($translations['en']) ? $translations['en']->name : '',
@@ -424,11 +430,13 @@ function teca_migrate_files() {
   $new_files = [];
   foreach ($result['file'] as $record) {
     $file = entity_load_single('file', $record->fid);
-    $new_files[] = array(
-      'id' => $file->fid,
-      'path' => file_create_url($file->uri),
-      'uid' => $file->uid,
-    );
+    if ($file->uid) {
+      $new_files[] = array(
+        'id' => $file->fid,
+        'path' => str_replace('http://default', 'http://teca.fao.org', file_create_url($file->uri)),
+        'uid' => $file->uid,
+      );
+    }
   }
 
   return $new_files;
@@ -441,7 +449,7 @@ function teca_migrate_sql($table, $values) {
     foreach ($values as $value) {
       foreach ($value as &$val) {
         $val = mysql_escape_string($val);
-        if (empty($val)) {
+        if (empty($val) && $val != 0) {
           $val = 'NULL';
         }
       }
@@ -466,8 +474,7 @@ function teca_migrate_exchange_groups() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'exchange_group')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'exchange_group');
 
   $result = $query->execute();
 
@@ -485,7 +492,7 @@ function teca_migrate_exchange_groups() {
       'changed' => date('Y-m-d H:i:s', $node->changed),
       'description' => $wrapper->body->value()['value'],
       'language_id' => $node->language,
-      'icon_id' => $icon['fid'],
+      'icon_id' => empty($icon['fid']) ? 'NULL': $icon['fid'],
     );
   }
 
@@ -500,8 +507,7 @@ function teca_migrate_news() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'article')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'article');
 
   $result = $query->execute();
 
@@ -511,30 +517,31 @@ function teca_migrate_news() {
     $wrapper = entity_metadata_wrapper('node', $node);
     $groups = $wrapper->og_group_ref->value();
     $group = $groups[0];
-    $new_news['news'][] = array(
-      'id' => $node->nid,
-      'title' => $node->title,
-      'uid' => $node->uid,
-      'status' => $node->status,
-      'created' => date('Y-m-d H:i:s', $node->created),
-      'changed' => date('Y-m-d H:i:s', $node->changed),
-      'description' => $wrapper->body->value()['value'],
-      'language_id' => $node->language,
-      'group_id' => $group->nid
-    );
-    foreach ($wrapper->field_images->value() as $image) {
-      $new_news['news_has_image'][] = array(
-        'news_id' => $node->nid,
-        'file_id' => $image['fid']
+    if (!empty($group->nid)) {
+      $new_news['news'][] = array(
+        'id' => $node->nid,
+        'title' => $node->title,
+        'uid' => $node->uid,
+        'status' => $node->status,
+        'created' => date('Y-m-d H:i:s', $node->created),
+        'changed' => date('Y-m-d H:i:s', $node->changed),
+        'description' => $wrapper->body->value()['value'],
+        'language_id' => $node->language,
+        'group_id' => $group->nid
       );
+      foreach ($wrapper->field_images->value() as $image) {
+        $new_news['news_has_image'][] = array(
+          'news_id' => $node->nid,
+          'file_id' => $image['fid']
+        );
+      }
+      foreach ($wrapper->field_attached_files->value() as $file) {
+        $new_news['news_has_file'][] = array(
+          'news_id' => $node->nid,
+          'file_id' => $file['fid']
+        );
+      }
     }
-    foreach ($wrapper->field_attached_files->value() as $file) {
-      $new_news['news_has_file'][] = array(
-        'news_id' => $node->nid,
-        'file_id' => $file['fid']
-      );
-    }
-
   }
 
   return $new_news;
@@ -548,8 +555,7 @@ function teca_migrate_resources() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'resource')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'resource');
 
   $result = $query->execute();
 
@@ -559,24 +565,25 @@ function teca_migrate_resources() {
     $wrapper = entity_metadata_wrapper('node', $node);
     $groups = $wrapper->og_group_ref->value();
     $group = $groups[0];
-    $new_resources['resource'][] = array(
-      'id' => $node->nid,
-      'title' => $node->title,
-      'uid' => $node->uid,
-      'status' => $node->status,
-      'created' => date('Y-m-d H:i:s', $node->created),
-      'changed' => date('Y-m-d H:i:s', $node->changed),
-      'description' => $wrapper->body->value()['value'],
-      'language_id' => $node->language,
-      'group_id' => $group->nid
-    );
-    foreach ($wrapper->field_attached_files->value() as $file) {
-      $new_resources['resource_has_file'][] = array(
-        'resource_id' => $node->nid,
-        'file_id' => $file['fid']
+    if (!empty($group->nid)) {
+      $new_resources['resource'][] = array(
+        'id' => $node->nid,
+        'title' => $node->title,
+        'uid' => $node->uid,
+        'status' => $node->status,
+        'created' => date('Y-m-d H:i:s', $node->created),
+        'changed' => date('Y-m-d H:i:s', $node->changed),
+        'description' => $wrapper->body->value()['value'],
+        'language_id' => $node->language,
+        'group_id' => $group->nid
       );
+      foreach ($wrapper->field_attached_files->value() as $file) {
+        $new_resources['resource_has_file'][] = array(
+          'resource_id' => $node->nid,
+          'file_id' => $file['fid']
+        );
+      }
     }
-
   }
 
   return $new_resources;
@@ -590,8 +597,7 @@ function teca_migrate_events() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'event')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'event');
 
   $result = $query->execute();
 
@@ -601,32 +607,33 @@ function teca_migrate_events() {
     $wrapper = entity_metadata_wrapper('node', $node);
     $groups = $wrapper->og_group_ref->value();
     $group = $groups[0];
-    $new_events['event'][] = array(
-      'id' => $node->nid,
-      'title' => $node->title,
-      'uid' => $node->uid,
-      'status' => $node->status,
-      'created' => date('Y-m-d H:i:s', $node->created),
-      'changed' => date('Y-m-d H:i:s', $node->changed),
-      'date_start' => $node->field_event_date2[$node->language][0]['value'],
-      'date_end' => $node->field_event_date2[$node->language][0]['value2'],
-      'description' => $wrapper->body->value()['value'],
-      'language_id' => $node->language,
-      'group_id' => $group->nid,
-      'country_id' => $wrapper->field_country->value()->iso2,
-      'url' => $wrapper->field_url->value()['url'],
-      'institution' => $node->field_institution[$node->language][0]['value'],
-      'contact_name' => $node->field_contact_name[$node->language][0]['value'],
-      'contact_address' => $node->field_contact_address[$node->language][0]['value'],
-      'contact_email' => $node->field_event_email[$node->language][0]['value']
-    );
-    foreach ($wrapper->field_attached_files->value() as $file) {
-      $new_events['event_has_file'][] = array(
-        'event_id' => $node->nid,
-        'file_id' => $file['fid']
+    if (!empty($group->nid)) {
+      $new_events['event'][] = array(
+        'id' => $node->nid,
+        'title' => $node->title,
+        'uid' => $node->uid,
+        'status' => $node->status,
+        'created' => date('Y-m-d H:i:s', $node->created),
+        'changed' => date('Y-m-d H:i:s', $node->changed),
+        'date_start' => $node->field_event_date2[$node->language][0]['value'],
+        'date_end' => $node->field_event_date2[$node->language][0]['value2'],
+        'description' => $wrapper->body->value()['value'],
+        'language_id' => $node->language,
+        'group_id' => $group->nid,
+        'country_id' => $wrapper->field_country->value()->iso2,
+        'url' => $wrapper->field_url->value()['url'],
+        'institution' => $node->field_institution[$node->language][0]['value'],
+        'contact_name' => $node->field_contact_name[$node->language][0]['value'],
+        'contact_address' => $node->field_contact_address[$node->language][0]['value'],
+        'contact_email' => $node->field_event_email[$node->language][0]['value']
       );
+      foreach ($wrapper->field_attached_files->value() as $file) {
+        $new_events['event_has_file'][] = array(
+          'event_id' => $node->nid,
+          'file_id' => $file['fid']
+        );
+      }
     }
-
   }
 
   return $new_events;
@@ -640,8 +647,7 @@ function teca_migrate_magazines() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'magazine')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'magazine');
 
   $result = $query->execute();
 
@@ -651,22 +657,24 @@ function teca_migrate_magazines() {
     $wrapper = entity_metadata_wrapper('node', $node);
     $groups = $wrapper->og_group_ref->value();
     $group = $groups[0];
-    $new_magazines[] = array(
-      'id' => $node->nid,
-      'title' => $node->title,
-      'uid' => $node->uid,
-      'status' => $node->status,
-      'created' => date('Y-m-d H:i:s', $node->created),
-      'changed' => date('Y-m-d H:i:s', $node->changed),
-      'description' => $wrapper->body->value()['value'],
-      'language_id' => $node->language,
-      'group_id' => $group->nid,
-      'type' => $wrapper->field_magazine_type->value()->name,
-      'date' => $node->field_magazine_date[$node->language][0]['value'],
-      'toc_id' => $wrapper->field_table_of_contents->value()[0]['fid'],
-      'cover_id' => $wrapper->field_cover_page->value()[0]['fid'],
-      'notes_id' => $wrapper->field_mag_additional_information->value()[0]['fid']
-    );
+    if (!empty($group->nid)) {
+      $new_magazines[] = array(
+        'id' => $node->nid,
+        'title' => $node->title,
+        'uid' => $node->uid,
+        'status' => $node->status,
+        'created' => date('Y-m-d H:i:s', $node->created),
+        'changed' => date('Y-m-d H:i:s', $node->changed),
+        'description' => $wrapper->body->value()['value'],
+        'language_id' => $node->language,
+        'group_id' => $group->nid,
+        'type' => $wrapper->field_magazine_type->value()->name,
+        'date' => empty($node->field_magazine_date[$node->language][0]['value']) ? 'NULL' : $node->field_magazine_date[$node->language][0]['value'],
+        'toc_id' => empty($wrapper->field_table_of_contents->value()[0]['fid']) ? 'NULL' : $wrapper->field_table_of_contents->value()[0]['fid'],
+        'cover_id' => empty($wrapper->field_cover_page->value()[0]['fid']) ? 'NULL' : $wrapper->field_cover_page->value()[0]['fid'],
+        'notes_id' => empty($wrapper->field_mag_additional_information->value()[0]['fid']) ? 'NULL' : $wrapper->field_mag_additional_information->value()[0]['fid']
+      );
+    }
   }
 
   return $new_magazines;
@@ -680,8 +688,7 @@ function teca_migrate_discussions() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node', '=')
-    ->entityCondition('bundle', 'discussion')
-    ->propertyCondition('status', '1', '=');
+    ->entityCondition('bundle', 'discussion');
 
   $result = $query->execute();
 
@@ -691,31 +698,33 @@ function teca_migrate_discussions() {
     $wrapper = entity_metadata_wrapper('node', $node);
     $groups = $wrapper->og_group_ref->value();
     $group = $groups[0];
-    $new_discussions['discussion'][] = array(
-      'id' => $node->nid,
-      'title' => $node->title,
-      'uid' => $node->uid,
-      'status' => $node->status,
-      'created' => date('Y-m-d H:i:s', $node->created),
-      'changed' => date('Y-m-d H:i:s', $node->changed),
-      'description' => $wrapper->body->value()['value'],
-      'language_id' => $node->language,
-      'group_id' => $group->nid,
-    );
-  }
+    if (!empty($group->nid)) {
+      $new_discussions['discussion'][] = array(
+        'id' => $node->nid,
+        'title' => $node->title,
+        'uid' => $node->uid,
+        'status' => $node->status,
+        'created' => date('Y-m-d H:i:s', $node->created),
+        'changed' => date('Y-m-d H:i:s', $node->changed),
+        'description' => $wrapper->body->value()['value'],
+        'language_id' => $node->language,
+        'group_id' => $group->nid,
+      );
 
-  foreach ($wrapper->field_images->value() as $file) {
-    $new_discussions['discussion_has_image'][] = array(
-      'discussion_id' => $node->nid,
-      'file_id' => $file['fid']
-    );
-  }
+      foreach ($wrapper->field_images->value() as $file) {
+        $new_discussions['discussion_has_image'][] = array(
+          'discussion_id' => $node->nid,
+          'file_id' => $file['fid']
+        );
+      }
 
-  foreach ($wrapper->field_attached_files->value() as $file) {
-    $new_discussions['discussion_has_file'][] = array(
-      'discussion_id' => $node->nid,
-      'file_id' => $file['fid']
-    );
+      foreach ($wrapper->field_attached_files->value() as $file) {
+        $new_discussions['discussion_has_file'][] = array(
+          'discussion_id' => $node->nid,
+          'file_id' => $file['fid']
+        );
+      }
+    }
   }
 
 
@@ -724,18 +733,25 @@ function teca_migrate_discussions() {
 
 function teca_migrate() {
   date_default_timezone_set('UTC');
+  echo "Migrating files\n";
   $files = teca_migrate_files();
   $sql = teca_migrate_sql('file', $files)."\n\n";
+  echo "Migrating users\n";
   $users = teca_migrate_users();
   $sql .= teca_migrate_sql('users', $users)."\n\n";
+  echo "Migrating regions\n";
   $regions = teca_migrate_regions();
   $sql .= teca_migrate_sql('region', $regions)."\n\n";
+  echo "Migrating keywords\n";
   $keywords = teca_migrate_keywords();
   $sql .= teca_migrate_sql('keyword', $keywords)."\n\n";
+  echo "Migrating categories\n";
   $categories = teca_migrate_categories();
   $sql .= teca_migrate_sql('category', $categories)."\n\n";
+  echo "Migrating partners\n";
   $partners = teca_migrate_partners();
   $sql .= teca_migrate_sql('partner', $partners)."\n\n";
+  echo "Migrating technologies\n";
   $technologies = teca_migrate_technologies($keywords);
   $sql .= teca_migrate_sql('technologies', $technologies['technologies'])."\n\n";
   $sql .= teca_migrate_sql('technology', $technologies['technology'])."\n\n";
@@ -744,20 +760,26 @@ function teca_migrate() {
   foreach ($technologies as $table => $values) {
     $sql .= teca_migrate_sql($table, $values)."\n\n";
   }
+  echo "Migrating exchange groups\n";
   $groups = teca_migrate_exchange_groups();
-  $sql = teca_migrate_sql('group', $groups)."\n\n";
+  $sql .= teca_migrate_sql('group', $groups)."\n\n";
+  echo "Migrating news\n";
   $news = teca_migrate_news();
   $sql .= teca_migrate_sql('news', $news['news'])."\n\n";
   $sql .= teca_migrate_sql('news_has_image', $news['news_has_image'])."\n\n";
   $sql .= teca_migrate_sql('news_has_file', $news['news_has_image'])."\n\n";
+  echo "Migrating resources\n";
   $resources = teca_migrate_resources();
   $sql .= teca_migrate_sql('resource', $resources['resource'])."\n\n";
   $sql .= teca_migrate_sql('resource_has_file', $resources['resource_has_file'])."\n\n";
+  echo "Migrating events\n";
   $events = teca_migrate_events();
   $sql .= teca_migrate_sql('event', $events['event'])."\n\n";
   $sql .= teca_migrate_sql('event_has_file', $events['event_has_file'])."\n\n";
+  echo "Migrating magazines\n";
   $magazines = teca_migrate_magazines();
   $sql .= teca_migrate_sql('magazine', $magazines)."\n\n";
+  echo "Migrating discussions\n";
   $discussions = teca_migrate_discussions();
   $sql .= teca_migrate_sql('discussion', $discussions['discussion'])."\n\n";
   $sql .= teca_migrate_sql('discussion_has_image', $discussions['discussion_has_image'])."\n\n";
@@ -768,3 +790,4 @@ function teca_migrate() {
 $sql = teca_migrate();
 file_put_contents(realpath(dirname(__FILE__)).'/newteca.sql', $sql);
 echo "end";
+
