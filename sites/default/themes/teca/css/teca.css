@@ -291,6 +291,10 @@ input[type="submit"] {
   background-position: 10px 10px;
 }
 
+#block-system-main #exchange-groups-advanced-list {
+  min-height: 250px;
+}
+
 .pane-technology-categories td, .pane-technology-categories table, .pane-technology-categories th {
   background-color: #D7DFEC;
 }
