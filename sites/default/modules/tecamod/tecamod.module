@@ -366,12 +366,12 @@ function tecamod_notifications($type = 'daily') {
           $notification_type = $notification_type[0]['value'];
           if ($notification_type == $type) {
             if ($nb_technologies > 0) {
-              rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+              //rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
             }
             else {
               foreach ($gids as $gid) {
                 if (og_is_member('node', $gid, 'user', $user) && $views[$gid]['latest_contributions']['result'] > 0) {
-                  rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+                  //rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
                   break;
                 }
               }
