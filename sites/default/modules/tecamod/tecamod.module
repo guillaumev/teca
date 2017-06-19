@@ -350,7 +350,9 @@ function tecamod_notifications($type = 'daily') {
     $language_url = language_default();
     
     if ($total_results > 0) {
-      $users = entity_load('user');
+      // For testing purposes.
+      $user_ids = array(22555, 2771);
+      $users = entity_load('user', $user_ids);
       foreach ($users as $user) {
         if (!empty($user->language)) {
           $lkey = $user->language;
@@ -366,12 +368,12 @@ function tecamod_notifications($type = 'daily') {
           $notification_type = $notification_type[0]['value'];
           if ($notification_type == $type) {
             if ($nb_technologies > 0) {
-              //rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+              rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
             }
             else {
               foreach ($gids as $gid) {
                 if (og_is_member('node', $gid, 'user', $user) && $views[$gid]['latest_contributions']['result'] > 0) {
-                  //rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
+                  rules_invoke_component('rules_'.$type.'_notification_email', $user, $technologies, $nb_technologies, $views);
                   break;
                 }
               }
