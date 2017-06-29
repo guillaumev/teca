@@ -350,9 +350,7 @@ function tecamod_notifications($type = 'daily') {
     $language_url = language_default();
     
     if ($total_results > 0) {
-      // For testing purposes.
-      $user_ids = array(22555, 2771);
-      $users = entity_load('user', $user_ids);
+      $users = entity_load('user');
       foreach ($users as $user) {
         if (!empty($user->language)) {
           $lkey = $user->language;
