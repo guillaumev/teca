@@ -299,11 +299,11 @@ function tecamod_get_view($view, $args) {
 }
 
 function tecamod_daily_notification() {
-  tecamod_notifications();
+  //tecamod_notifications();
 }
 
 function tecamod_weekly_notification() {
-  tecamod_notifications('weekly');
+  //tecamod_notifications('weekly');
 }
 
 function tecamod_notifications($type = 'daily') {
