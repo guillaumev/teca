@@ -109,6 +109,8 @@ function print_pdf_generate_path($path, $query = NULL, $cid = NULL, $pdf_filenam
   // And make anchor links relative again, to permit in-PDF navigation
   $html = preg_replace("!${base_url}/" . PRINTPDF_PATH . '/.*?#!', '#', $html);
 
+  $html = str_replace("’" , "'", $html);
+
   return print_pdf_generate_html($print, $html, $pdf_filename);
 }
 
