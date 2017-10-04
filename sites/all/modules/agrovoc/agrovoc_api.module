@@ -9,7 +9,7 @@
 /**
  * Agrovoc web services URL
  */
-define('AGROVOC_WS_URL', 'http://agrovoc.fao.org/axis/services/SKOSWS');
+define('AGROVOC_WS_URL', 'http://artemide.art.uniroma2.it/SKOSWS/services/SKOSWS?wsdl');
 
 /**
  * Agrovoc web services URI
@@ -27,14 +27,14 @@ $_agrovoc_api_client = NULL;
 function _agrovoc_api_get_client() {
   global $_agrovoc_api_client;
   if ($_agrovoc_api_client == NULL) {
-    $_agrovoc_api_client = new SoapClient(NULL, array('location' => AGROVOC_WS_URL, 'uri' => AGROVOC_WS_URI, 'exceptions' => 0));
+    $_agrovoc_api_client = new SoapClient(AGROVOC_WS_URL, array('exceptions' => 0));
   }
   return $_agrovoc_api_client;
 }
 
 /**
  * Implements the call to the simpleSearchByMode2 method of the Agrovoc web services.
- * 
+ *
  * @param string $term
  *  Term searched
  * @param string $mode
@@ -48,7 +48,7 @@ function _agrovoc_api_get_client() {
  *  Limits the number of results to be returned. Only used if $as_array is set to TRUE
  * @param string $filter_language
  *  If set, will return only terms of a specific language. Only used if as_array is set to true
- * 
+ *
  * @return
  *  Response of the Agrovoc API
  */
@@ -94,7 +94,7 @@ function agrovoc_api_simple_search_by_mode2($term, $mode, $separator = ',', $as_
 
 /**
  * Formats the elements returned in an array.
- * 
+ *
  * @param string $response
  *  Response of Agrovoc web service
  * @param string $separator
@@ -103,7 +103,7 @@ function agrovoc_api_simple_search_by_mode2($term, $mode, $separator = ',', $as_
  *  Limit the number of results to return
  * @param string $filter_language
  *  Filter results by language
- * 
+ *
  * @return array
  *  Array of results
  */
@@ -149,14 +149,14 @@ function _agrovoc_api_simple_search_by_mode2_response_to_array($response, $separ
 
 /**
  * Implements the call to the getAllLabelsByTermcode2 method of the Agrovoc web services.
- * 
+ *
  * @param int $termcode
  *  Termcode to look for
  * @param string $separator
  *  Separator (set to , by default)
  * @param bool $as_array
  *  Whether to return the results under the form of an array indexed by language code. Set to TRUE by default
- * 
+ *
  * @return
  *  Response of the Agrovoc web services
  */
@@ -202,12 +202,12 @@ function agrovoc_api_get_all_labels_by_termcode2($termcode, $separator = ',', $a
 
 /**
  * Formats the element returned by getAllLabelsByTermcode2 as an array.
- * 
+ *
  * @param string $response
  *  Response of the Agrovoc web services
  * @param string $separator
  *  Separator
- * 
+ *
  * @return array
  *  Array indexed by language
  */
@@ -230,9 +230,9 @@ function _agrovoc_api_get_all_labels_by_termcode2_response_to_array($response, $
 
 /**
  * Checks if a term is part of the Agrovoc.
- * 
+ *
  * This function is not part of the Agrovoc web services, however it is provided here for convenience.
- * 
+ *
  * @param string $term
  *  Term to be checked
  * @return
