@@ -5,8 +5,8 @@
  * Drush commands related to the No Autocomplete module.
  */
 
-define('NOAUTOCOMPLETE_GREEN_OUPUT', "\033[1;32;40m\033[1m[%s]\033[0m");
-define('NOAUTOCOMPLETE_RED_OUPUT', "\033[31;40m\033[1m[%s]\033[0m");
+define('NO_AUTOCOMPLETE_GREEN_OUPUT', "\033[1;32;40m\033[1m[%s]\033[0m");
+define('NO_AUTOCOMPLETE_RED_OUPUT', "\033[31;40m\033[1m[%s]\033[0m");
 
 /**
  * Implements hook_drush_command().
@@ -27,7 +27,7 @@ function no_autocomplete_drush_command() {
   $items['na-profile'] = array(
     'description' => dt('Configures the "autocomplete=off" option on the user profile edit form.'),
     'arguments' => array(
-      'status' => dt('The option status (on, off).'),
+      'status' => dt('The status option (on, off).'),
     ),
     'aliases' => array('nap'),
     'examples' => array(
@@ -53,6 +53,9 @@ function no_autocomplete_drush_help($section) {
   switch ($section) {
     case 'meta:no_autocomplete:title':
       return dt("No Autocomplete commands");
+
+    case 'meta:no_autocomplete:summary':
+      return dt("Interacts with the No Autocomplete module's functionalities.");
 
     case 'drush:na-login':
       return dt('Configures the "autocomplete=off" option on the user login form.');
@@ -88,8 +91,7 @@ function drush_no_autocomplete_na_login_validate() {
 function _drush_no_autocomplete_validate_argument(array $option) {
   // Check for only one argument.
   if (count($option) > 1) {
-    drush_set_error('DRUSH_NO_AUTOCOMPLETE_ERROR', dt('This command use only one argument.'));
-    return FALSE;
+    return drush_set_error('NO_AUTOCOMPLETE_INVALID_ARGUMENT', dt('This command use only one argument.'));
   }
 
   // Available options.
@@ -100,8 +102,7 @@ function _drush_no_autocomplete_validate_argument(array $option) {
 
   // Check for correct argument.
   if (isset($option[0]) && !in_array($option[0], $available_options)) {
-    drush_set_error('DRUSH_NO_AUTOCOMPLETE_ERROR', dt("You must specify as argument 'on' or 'off'"));
-    return FALSE;
+    return drush_set_error('NO_AUTOCOMPLETE_INVALID_ARGUMENT', dt("You must specify as argument 'on' or 'off'"));
   }
 
   return TRUE;
@@ -126,7 +127,7 @@ function drush_no_autocomplete_na_login() {
 function _drush_no_autocomplete_set_options($variable, $args) {
   // Getting the values from the config.
   $config_status = variable_get($variable, FALSE);
-  $status = $config_status ? sprintf(NOAUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NOAUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
+  $status = $config_status ? sprintf(NO_AUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NO_AUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
 
   switch ($variable) {
     case 'no_autocomplete_login_form':
@@ -197,8 +198,8 @@ function drush_no_autocomplete_na_summary() {
   $no_autocomplete_login_form = variable_get('no_autocomplete_login_form', FALSE);
   $no_autocomplete_profile_form = variable_get('no_autocomplete_profile_form', FALSE);
   // Adding format to the output message.
-  $no_autocomplete_login_form_status = $no_autocomplete_login_form ? sprintf(NOAUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NOAUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
-  $no_autocomplete_profile_form_status = $no_autocomplete_profile_form ? sprintf(NOAUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NOAUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
+  $no_autocomplete_login_form_status = $no_autocomplete_login_form ? sprintf(NO_AUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NO_AUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
+  $no_autocomplete_profile_form_status = $no_autocomplete_profile_form ? sprintf(NO_AUTOCOMPLETE_GREEN_OUPUT, dt('Activated')) : sprintf(NO_AUTOCOMPLETE_RED_OUPUT, dt('Disabled'));
 
   drush_print(dt('Status summary:'));
   drush_print(dt('The "autocomplete=off" option on the user login form is: @status', array('@status' => $no_autocomplete_login_form_status)));
