@@ -754,10 +754,6 @@ input[type="submit"] {
   display: none;
 }
 
-ul.language-switcher-locale-url li.pt-br {
-  display: none;
-}
-
 /** Exchange groups page **/
 .pane-node-group-group {
   text-align: right;
