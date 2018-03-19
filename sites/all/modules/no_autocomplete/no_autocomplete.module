@@ -25,7 +25,7 @@ function no_autocomplete_help($path, $arg) {
     case 'admin/help#no_autocomplete':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The No Autocomplete module adds the autocomplete=off attribute to selected key user forms. On a browser that respects this setting, it means that the browser will not try to autocomplete the password on the user login forms, or the whole user edit form.') . '</p>';
+      $output .= '<p>' . t('The No Autocomplete module adds the autocomplete=off attribute to selected key user forms. On a browser that respects this setting, it means that the browser will not try to autocomplete the password on the user login forms.') . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Configuring the module') . '</dt>';
@@ -49,6 +49,7 @@ function no_autocomplete_menu() {
     'page arguments'   => array('no_autocomplete_admin_settings_form'),
     'access arguments' => array('administer no_autocomplete'),
     'type'             => MENU_NORMAL_ITEM,
+    'file' => 'no_autocomplete.admin.inc',
   );
   return $items;
 }
@@ -61,36 +62,8 @@ function no_autocomplete_menu() {
 function no_autocomplete_form_alter(&$form, $form_state, $form_id) {
   // Add to the user_login and user_profile_form.
   if (substr($form_id, 0, 10) == 'user_login' && variable_get('no_autocomplete_login_form', FALSE)) {
-    if (empty($form['pass']['#attributes'])) {
-      $form['pass']['#attributes'] = array();
-    }
     $form['pass']['#attributes']['autocomplete'] = 'off';
   }
-
-  // Remove autofill from the user edit form.
-  if ($form_id == 'user_profile_form' && variable_get('no_autocomplete_profile_form', FALSE)) {
-    $form['#attributes']['autocomplete'] = 'off';
-  }
-}
-
-/**
- * Form to set our options.
- */
-function no_autocomplete_admin_settings_form() {
-  $form['no_autocomplete_login_form'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use "autocomplete=off" on user login form'),
-    '#default_value' => variable_get('no_autocomplete_login_form', FALSE),
-  );
-
-  $form['no_autocomplete_profile_form'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use "autocomplete=off" on user profile edit form'),
-    '#default_value' => variable_get('no_autocomplete_profile_form', FALSE),
-  );
-
-  $form = system_settings_form($form);
-  return $form;
 }
 
 /**
